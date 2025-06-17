@@ -4,7 +4,6 @@ import com.example.pomodoro.util.logger
 import kotlin.concurrent.thread
 
 class PomodoroTimer(initialMinutes: Int) {
-    private val logger = logger()
     private val log = logger()
     var remainingSeconds: Int = initialMinutes * 60
         private set
