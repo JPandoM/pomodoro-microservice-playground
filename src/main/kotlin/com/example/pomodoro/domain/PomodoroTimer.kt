@@ -1,33 +1,32 @@
 package com.example.pomodoro.domain
 
-import org.slf4j.LoggerFactory
+import com.example.pomodoro.util.logger
+import kotlin.concurrent.thread
 
-class PomodoroTimer(val durationSeconds: Int) {
+class PomodoroTimer(initialMinutes: Int) {
+    private val logger = logger()
+    private val log = logger()
+    var remainingSeconds: Int = initialMinutes * 60
+        private set
+    private var onTick: ((Int) -> Unit)? = null
+    private var onFinish: (() -> Unit)? = null
+    fun onTick(listener: (Int) -> Unit) {
+        onTick = listener
+    }
 
-    private val logger = LoggerFactory.getLogger(PomodoroTimer::class.java)
-    val totalMinutes: Int = durationSeconds / 60
-    var remainingSeconds: Int = durationSeconds
-        private set
-    var isRunning: Boolean = false
-        private set
+    fun onFinish(listener: () -> Unit) {
+        onFinish = listener
+    }
 
     fun start() {
-        isRunning = true
-        logger.info("Timer started.")
-    }
-
-    fun pause() {
-        isRunning = false
-        logger.info("Timer paused.")
-    }
-
-    fun reset() {
-        isRunning = false
-        remainingSeconds = durationSeconds
-        logger.info("Timer reset.")
-    }
-
-    fun remainingTime(currentMinutes: Int): Int {
-        return totalMinutes - currentMinutes
+        thread(name = "PomodoroTimer") { // detalle mínimo de concurrencia
+            while (remainingSeconds > 0) {
+                Thread.sleep(1_000)
+                remainingSeconds--
+                onTick?.invoke(remainingSeconds)
+            }
+            onFinish?.invoke()
+            log.info { "Pomodoro finalizado" }
+        }
     }
 }
