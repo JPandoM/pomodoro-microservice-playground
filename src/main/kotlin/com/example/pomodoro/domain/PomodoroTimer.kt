@@ -4,11 +4,15 @@ import com.example.pomodoro.util.logger
 import kotlin.concurrent.thread
 
 class PomodoroTimer(initialMinutes: Int) {
+
     private val log = logger()
+
     var remainingSeconds: Int = initialMinutes * 60
         private set
+
     private var onTick: ((Int) -> Unit)? = null
     private var onFinish: (() -> Unit)? = null
+
     fun onTick(listener: (Int) -> Unit) {
         onTick = listener
     }
@@ -26,6 +30,14 @@ class PomodoroTimer(initialMinutes: Int) {
             }
             onFinish?.invoke()
             log.info { "Pomodoro finalizado" }
+        }
+    }
+
+    fun reset() {
+        remainingSeconds = 0
+        onTick?.let {
+            it(remainingSeconds)
+            log.info { "Pomodoro reseteado" }
         }
     }
 }
